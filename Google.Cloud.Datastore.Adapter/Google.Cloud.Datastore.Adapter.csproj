@@ -9,7 +9,12 @@
     <PackageProjectUrl>https://github.com/spitfyr86/Google.Cloud.Datastore.Adapter</PackageProjectUrl>
     <RepositoryUrl>https://github.com/spitfyr86/Google.Cloud.Datastore.Adapter.git</RepositoryUrl>
     <Company>Dennis Laping</Company>
-    <PackageId>Spitfyr86.Google.Cloud.Datastore.Adapter</PackageId>
+    <PackageId>spitfyr.Google.Cloud.Datastore.Adapter</PackageId>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageTags>google gcp datastore .net</PackageTags>
+    <PackageReleaseNotes>This is the inital implementation with some tags.</PackageReleaseNotes>
+    <Version>1.0.0.1</Version>
+    <PackageLicenseUrl>https://github.com/spitfyr86/Google.Cloud.Datastore.Adapter/blob/master/LICENSE</PackageLicenseUrl>
   </PropertyGroup>
 
   <ItemGroup>
