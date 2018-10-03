@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2026
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Google.Cloud.Datastore.Adapter", "Google.Cloud.Datastore.Adapter\Google.Cloud.Datastore.Adapter.csproj", "{455E4097-3EEC-4F3D-A0D1-11079718CAEE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{455E4097-3EEC-4F3D-A0D1-11079718CAEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{455E4097-3EEC-4F3D-A0D1-11079718CAEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{455E4097-3EEC-4F3D-A0D1-11079718CAEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{455E4097-3EEC-4F3D-A0D1-11079718CAEE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BF48945B-B024-403B-ABF9-5BC762FCF28F}
+	EndGlobalSection
+EndGlobal
