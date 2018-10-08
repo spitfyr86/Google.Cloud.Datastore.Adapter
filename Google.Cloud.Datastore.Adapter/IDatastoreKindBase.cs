@@ -11,22 +11,27 @@ namespace Google.Cloud.Datastore.Adapter
         Task<TKey> InsertOneAsync(TEntity entity);
         Task<TKey[]> InsertAsync(TEntity[] dalEntities);
 
-        Task<TKey> UpdateAsync(Filter filter, TEntity entity);
+        Task FindOneAndReplaceAsync(TEntity entity);
 
-        Task<TEntity> GetAsync(TKey id);
-        Task<IEnumerable<TEntity>> GetAsync(Filter filter);
-        Task<IEnumerable<TEntity>> GetAsync(Query query);
+        Task<TEntity> FindAsync(TKey id);
+        Task<IEnumerable<TEntity>> FindAsync(IQueryOptions<TEntity> queryOptions);
+        Task<IEnumerable<TEntity>> FindAsync(Filter filter);
+        Task<IEnumerable<TEntity>> FindAsync(Query query);
         Task<IEnumerable<TEntity>> GetAllAsync();
+        Task<long> CountAsync(IQueryOptions<TEntity> queryOptions);
 
         TKey InsertOne(TEntity entity);
         TKey[] Insert(TEntity[] dalEntities);
 
         IEnumerable<TEntity> GetAll();
-        IEnumerable<TEntity> Get(Filter filter);
-        IEnumerable<TEntity> Get(Query query);
+        IEnumerable<TEntity> Find(IQueryOptions<TEntity> queryOptions);
+        IEnumerable<TEntity> Find(Filter filter);
+        IEnumerable<TEntity> Find(Query query);
+        IEnumerable<Key> FindKeys(Filter filter);
 
         Task DeleteOneAsync(TKey id);
         Task DeleteAsync(TKey[] ids);
+        Task DeleteManyAsync(Filter filter);
 
         Task UpdateAsync(TEntity entity);
     }

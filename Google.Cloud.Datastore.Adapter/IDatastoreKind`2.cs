@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Google.Cloud.Datastore.Adapter.Serialization;
 using Google.Cloud.Datastore.V1;
@@ -10,12 +12,5 @@ namespace Google.Cloud.Datastore.Adapter
         where TEntity : DatastoreEntity
     {
         IQueryable<TEntity> AsQueryable();
-
-        IEnumerable<TEntity> Find(Filter filter);
-
-        Task FindOneAndReplaceAsync(TEntity entity);
-        Task<IEnumerable<TEntity>> FindAsync(Filter filter);
-
-        Task DeleteManyAsync(Filter filter);
     }
 }

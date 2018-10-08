@@ -12,8 +12,8 @@
     <PackageId>spitfyr.Google.Cloud.Datastore.Adapter</PackageId>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageTags>google gcp datastore .net</PackageTags>
-    <PackageReleaseNotes>This is the inital implementation with some tags.</PackageReleaseNotes>
-    <Version>1.0.0.1</Version>
+    <PackageReleaseNotes></PackageReleaseNotes>
+    <Version>1.0.0.2</Version>
     <PackageLicenseUrl>https://github.com/spitfyr86/Google.Cloud.Datastore.Adapter/blob/master/LICENSE</PackageLicenseUrl>
   </PropertyGroup>
 

@@ -1,13 +1,14 @@
-﻿using System;
+﻿using Google.Cloud.Datastore.Adapter.Serialization;
+using Google.Cloud.Datastore.V1;
+using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
-using Google.Cloud.Datastore.Adapter.Serialization;
-using Google.Cloud.Datastore.V1;
-using Google.Protobuf.WellKnownTypes;
 using Value = Google.Cloud.Datastore.V1.Value;
 
 namespace Google.Cloud.Datastore.Adapter
@@ -64,24 +65,55 @@ namespace Google.Cloud.Datastore.Adapter
             }
             return res.ToArray();
         }
-
-        public Task<TKey> UpdateAsync(Filter filter, TEntity entity)
+        
+        public Task FindOneAndReplaceAsync(TEntity entity)
         {
-            throw new NotImplementedException();
+            return Database.UpdateAsync(BuildEntity(entity));
         }
+        
 
-
-        public async Task<TEntity> GetAsync(TKey id)
+        public async Task<TEntity> FindAsync(TKey id)
         {
             var key = BuildKey(id);
             var entity = await Database.LookupAsync(key);
             return entity != null ? BuildDalEntity(entity) : null;
         }
 
+        public async Task<IEnumerable<TEntity>> FindAsync(IQueryOptions<TEntity> queryOptions)
+        {
+            var options = queryOptions.GetOptions();
+
+            var query = new Query(Kind)
+            {
+                //TODO: Handle multiple property sorts
+                Order = { options.PropertyOrders },
+            };
+
+            //if (!string.IsNullOrEmpty(options.Skip))
+            //    query.StartCursor = ByteString.FromBase64(options.Skip);
+
+            if (options.Limit != null)
+                query.Limit = options.Limit;
+
+            var results = await Database.RunQueryAsync(query);
+            return results.Entities.Select(BuildDalEntity);
+        }
+
         public async Task<IEnumerable<TEntity>> GetAllAsync()
         {
             var query = new Query(Kind);
-            return await GetAsync(query);
+            return await FindAsync(query);
+        }
+
+        public async Task<long> CountAsync(IQueryOptions<TEntity> queryOptions)
+        {
+            var query = new Query(Kind)
+            {
+                Projection = { "__key__" }
+            };
+
+            var results = await Database.RunQueryAsync(query);
+            return results.Entities.Count;
         }
 
         public TKey InsertOne(TEntity dsEntity)
@@ -120,16 +152,16 @@ namespace Google.Cloud.Datastore.Adapter
             return res.ToArray();
         }
 
-        public async Task<IEnumerable<TEntity>> GetAsync(Filter filter)
+        public async Task<IEnumerable<TEntity>> FindAsync(Filter filter)
         {
             var query = new Query(Kind)
             {
                 Filter = filter
             };
-            return await GetAsync(query);
+            return await FindAsync(query);
         }
-
-        public async Task<IEnumerable<TEntity>> GetAsync(Query query)
+        
+        public async Task<IEnumerable<TEntity>> FindAsync(Query query)
         {
             var results = await Database.RunQueryAsync(query);
             return results.Entities.Select(BuildDalEntity);
@@ -139,19 +171,50 @@ namespace Google.Cloud.Datastore.Adapter
         public IEnumerable<TEntity> GetAll()
         {
             var query = new Query(Kind);
-            return Get(query);
+            return Find(query);
         }
 
-        public IEnumerable<TEntity> Get(Filter filter)
+        public IEnumerable<Key> FindKeys(Filter filter)
+        {
+            var query = new Query(Kind)
+            {
+                Filter = filter,
+                Projection = { "__key__" }
+            };
+            var results = Database.RunQuery(query);
+            return results.Entities.Select(x => x.Key);
+        }
+
+        public IEnumerable<TEntity> Find(IQueryOptions<TEntity> queryOptions)
+        {
+            var options = queryOptions.GetOptions();
+
+            var query = new Query(Kind)
+            {
+                //TODO: Handle multiple property sorts
+                Order = { options.PropertyOrders },
+            };
+
+            //if (!string.IsNullOrEmpty(options.Skip))
+            //    query.StartCursor = ByteString.FromBase64(options.Skip);
+
+            if (options.Limit != null)
+                query.Limit = options.Limit;
+
+            var results = Database.RunQuery(query);
+            return results.Entities.Select(BuildDalEntity);
+        }
+
+        public IEnumerable<TEntity> Find(Filter filter)
         {
             var query = new Query(Kind)
             {
                 Filter = filter
             };
-            return Get(query);
+            return Find(query);
         }
 
-        public IEnumerable<TEntity> Get(Query query)
+        public IEnumerable<TEntity> Find(Query query)
         {
             var results = Database.RunQuery(query);
             return results.Entities.Select(BuildDalEntity);
@@ -168,9 +231,15 @@ namespace Google.Cloud.Datastore.Adapter
         {
             if (ids.Length > 1000)
             {
-                // TODO throw limit exception + add batch method support
+                throw new ArgumentOutOfRangeException(nameof(ids), "Bulk delete of more than 1000 entities is not allowed.");
             }
             var keys = ids.Select(BuildKey);
+            await Database.DeleteAsync(keys);
+        }
+        
+        public async Task DeleteManyAsync(Filter filter)
+        {
+            var keys = FindKeys(filter);
             await Database.DeleteAsync(keys);
         }
 
@@ -179,7 +248,7 @@ namespace Google.Cloud.Datastore.Adapter
             var entity = BuildEntity(obj, true);
             await Database.UpdateAsync(entity);
         }
-
+        
         public string GetPropertyName<TProp>(Expression<Func<TEntity, TProp>> expression)
         {
             var memberExpression = expression.Body as MemberExpression;
@@ -188,6 +257,16 @@ namespace Google.Cloud.Datastore.Adapter
 
 
         #region Helper Methods
+
+        private string CursorPaging(Query query, string pageCursor)
+        {
+            // [START datastore_cursor_paging]
+            if (!string.IsNullOrEmpty(pageCursor))
+                query.StartCursor = ByteString.FromBase64(pageCursor);
+
+            return Database.RunQuery(query).EndCursor?.ToBase64();
+            // [END datastore_cursor_paging]
+        }
 
         public Entity BuildEntity(TEntity obj, bool isUpdate = false)
         {
@@ -210,7 +289,7 @@ namespace Google.Cloud.Datastore.Adapter
             }
             return obj as TEntity;
         }
-
+        
         private string GetKind()
         {
             var kindAttribute = typeof(TEntity).GetCustomAttribute(typeof(KindAttribute));
