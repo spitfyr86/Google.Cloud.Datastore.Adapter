@@ -14,6 +14,7 @@ namespace Google.Cloud.Datastore.Adapter
         Task FindOneAndReplaceAsync(TEntity entity);
 
         Task<TEntity> FindAsync(TKey id);
+        Task<IEnumerable<TEntity>> FindInAsync(string field, dynamic[] values);
         Task<IEnumerable<TEntity>> FindAsync(IQueryOptions<TEntity> queryOptions);
         Task<IEnumerable<TEntity>> FindAsync(Filter filter);
         Task<IEnumerable<TEntity>> FindAsync(Query query);

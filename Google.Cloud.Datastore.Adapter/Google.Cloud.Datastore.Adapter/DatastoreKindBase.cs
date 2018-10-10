@@ -23,10 +23,11 @@ namespace Google.Cloud.Datastore.Adapter
 
         protected DatastoreKindBase(DatastoreDb database)
         {
-            Database = database;
-            Kind = GetKind();
             _kindKeyInfo = GetKindKeyInfo();
             _typesMetadataLoader = new TypesMetadataLoader(typeof(TEntity));
+
+            Database = database;
+            Kind = GetKind();
 
         }
         
@@ -77,6 +78,23 @@ namespace Google.Cloud.Datastore.Adapter
             var key = BuildKey(id);
             var entity = await Database.LookupAsync(key);
             return entity != null ? BuildDalEntity(entity) : null;
+        }
+
+        public async Task<IEnumerable<TEntity>> FindInAsync(string field, dynamic[] values)
+        {
+            var entities = new List<TEntity>();
+
+            foreach (var value in values)
+            {
+                var query = new Query(Kind)
+                {
+                    Filter = Filter.Equal(field, value)
+                };
+                var results = await Database.RunQueryAsync(query);
+                entities.AddRange(results.Entities.Select(BuildDalEntity));
+            }
+
+            return entities;
         }
 
         public async Task<IEnumerable<TEntity>> FindAsync(IQueryOptions<TEntity> queryOptions)

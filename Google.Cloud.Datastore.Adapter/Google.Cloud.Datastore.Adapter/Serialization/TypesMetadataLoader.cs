@@ -20,9 +20,9 @@ namespace Google.Cloud.Datastore.Adapter.Serialization
             {
                 _typesMetadata = ConstructTypesMetadata(type);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new Exception($"Error loading entity definition, type: {type}");
+                throw new Exception($"Error loading entity definition, type: {type}", ex);
             }
         }
 
@@ -35,7 +35,7 @@ namespace Google.Cloud.Datastore.Adapter.Serialization
             return (from t in _typesMetadata where t.Value.InheritedClassType == type select t.Key).FirstOrDefault();
         }
 
-        private static Dictionary<System.Type, TypeMetadata> ConstructTypesMetadata(System.Type type, string baseEntityName = null)
+        private  Dictionary<System.Type, TypeMetadata> ConstructTypesMetadata(System.Type type, string baseEntityName = null)
         {
             var typesMetadata = new Dictionary<System.Type, TypeMetadata>();
             Func<object> constructor;
@@ -43,7 +43,7 @@ namespace Google.Cloud.Datastore.Adapter.Serialization
             var inheritedEntityTypeAttribute = type.GetCustomAttribute<InheritedEntityTypeAttribute>();
             if (inheritedEntityTypeAttribute != null)
             {
-                var inheritedTypes = type.Assembly.GetTypes().Where(a => a.IsSubclassOf(type));
+                var inheritedTypes = type.Assembly.GetTypes().Where(a => a.GetTypeInfo().IsSubclassOf(type));
                 foreach (var t in inheritedTypes)
                 {
                     var innerMetadata = ConstructTypesMetadata(t, inheritedEntityTypeAttribute.Type);
@@ -93,7 +93,7 @@ namespace Google.Cloud.Datastore.Adapter.Serialization
 
             return typesMetadata;
         }
-        private static Dictionary<string, Accessors> GetPropertiesAccessors(System.Type type)
+        private  Dictionary<string, Accessors> GetPropertiesAccessors(System.Type type)
         {
             var propertiesAccessors = new Dictionary<string, Accessors>();
             var properties = type.GetProperties();
@@ -112,7 +112,7 @@ namespace Google.Cloud.Datastore.Adapter.Serialization
             return propertiesAccessors;
         }
 
-        public static string GetInheritedType(InheritedEntityTypeAttribute inheritedEntityTypeAttribute, string baseEntityName = null)
+        public  string GetInheritedType(InheritedEntityTypeAttribute inheritedEntityTypeAttribute, string baseEntityName = null)
         {
             if (inheritedEntityTypeAttribute != null)
             {
@@ -123,22 +123,23 @@ namespace Google.Cloud.Datastore.Adapter.Serialization
 
         #region Expressions Builders
 
-        private static Func<object> BuildEmptyConstructorAccessor(System.Type type)
+        private Func<object> BuildEmptyConstructorAccessor(System.Type type)
         {
             try
             {
-                var constructor = type.GetConstructor(BindingFlags.Instance | BindingFlags.Public, null, CallingConventions.HasThis, new System.Type[0], new ParameterModifier[0]);
-                var constructorExpression = Expression.New(constructor ?? throw new InvalidOperationException());
+                var constructor = type.GetConstructors(BindingFlags.Instance | BindingFlags.Public);
+                var constructorExpression = Expression.New(constructor[0] ?? throw new InvalidOperationException());
                 var lambda = Expression.Lambda<Func<object>>(constructorExpression);
                 return lambda.Compile();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine(ex.Message, ex);
                 // ignored
             }
             return null;
         }
-        private static Action<object, object> BuildMethodAccessorWithOneParameter(MethodInfo method)
+        private Action<object, object> BuildMethodAccessorWithOneParameter(MethodInfo method)
         {
             var obj = Expression.Parameter(typeof(object), "o");
             var methodParameter = Expression.Parameter(typeof(object));
@@ -154,7 +155,7 @@ namespace Google.Cloud.Datastore.Adapter.Serialization
 
             return expr.Compile();
         }
-        private static Func<object, object> BuildMethodAccessorWithReturnValue(MethodInfo method)
+        private Func<object, object> BuildMethodAccessorWithReturnValue(MethodInfo method)
         {
             var obj = Expression.Parameter(typeof(object), "o");
             Expression<Func<object, object>> expr =
@@ -163,7 +164,7 @@ namespace Google.Cloud.Datastore.Adapter.Serialization
                                                typeof(object)), obj);
             return expr.Compile();
         }
-        private static Func<object, object, object> BuildMethodAccessorWithOneParameterAndReturnValue(MethodInfo method)
+        private Func<object, object, object> BuildMethodAccessorWithOneParameterAndReturnValue(MethodInfo method)
         {
             var obj = Expression.Parameter(typeof(object), "o");
             var index = Expression.Parameter(typeof(object));
