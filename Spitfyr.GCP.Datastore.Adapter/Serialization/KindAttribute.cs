@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Google.Cloud.Datastore.Adapter.Serialization
+namespace Spitfyr.GCP.Datastore.Adapter.Serialization
 {
     public class KindAttribute : Attribute
     {

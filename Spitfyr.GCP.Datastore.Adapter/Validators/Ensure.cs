@@ -17,7 +17,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 
-namespace Google.Cloud.Datastore.Adapter.Validators
+namespace Spitfyr.GCP.Datastore.Adapter.Validators
 {
     /// <summary>
     /// Represents methods that can be used to ensure that parameter values meet expected conditions.

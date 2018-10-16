@@ -1,7 +1,7 @@
-﻿using Google.Cloud.Datastore.Adapter.Serialization;
-using Google.Cloud.Datastore.V1;
+﻿using Google.Cloud.Datastore.V1;
+using Spitfyr.GCP.Datastore.Adapter.Serialization;
 
-namespace Google.Cloud.Datastore.Adapter
+namespace Spitfyr.GCP.Datastore.Adapter
 {
     public interface IDatastoreKind<TEntity> : IDatastoreKind<TEntity, long>
         where TEntity : DatastoreEntity

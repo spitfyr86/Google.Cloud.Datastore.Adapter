@@ -1,6 +1,6 @@
-﻿using Google.Cloud.Datastore.Adapter.Serialization;
+﻿using Spitfyr.GCP.Datastore.Adapter.Serialization;
 
-namespace Google.Cloud.Datastore.Adapter
+namespace Spitfyr.GCP.Datastore.Adapter
 {
     public interface IDatastoreDatabase
     {

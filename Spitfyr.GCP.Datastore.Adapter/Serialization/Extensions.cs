@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Google.Cloud.Datastore.Adapter.Serialization
+namespace Spitfyr.GCP.Datastore.Adapter.Serialization
 {
     public static class Extensions
     {

@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-using Google.Cloud.Datastore.Adapter.Serialization;
+﻿using System.Linq;
 using Google.Cloud.Datastore.V1;
+using Spitfyr.GCP.Datastore.Adapter.Serialization;
 
-namespace Google.Cloud.Datastore.Adapter
+namespace Spitfyr.GCP.Datastore.Adapter
 {
     internal class DatastoreKind<TEntity, TKey> : DatastoreKindBase<TEntity, TKey>, IDatastoreKind<TEntity, TKey> 
         where TEntity : DatastoreEntity

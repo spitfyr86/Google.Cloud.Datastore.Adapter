@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
-using Google.Cloud.Datastore.Adapter.Serialization;
 using Google.Cloud.Datastore.V1;
 using Google.Protobuf.Collections;
+using Spitfyr.GCP.Datastore.Adapter.Serialization;
 
-namespace Google.Cloud.Datastore.Adapter
+namespace Spitfyr.GCP.Datastore.Adapter
 {
     public class QueryOptions<TEntity> : IQueryOptions<TEntity> where TEntity : DatastoreEntity
     {

@@ -1,8 +1,8 @@
-﻿using Google.Cloud.Datastore.Adapter.Serialization;
-using Google.Cloud.Datastore.Adapter.Validators;
-using Google.Cloud.Datastore.V1;
+﻿using Google.Cloud.Datastore.V1;
+using Spitfyr.GCP.Datastore.Adapter.Serialization;
+using Spitfyr.GCP.Datastore.Adapter.Validators;
 
-namespace Google.Cloud.Datastore.Adapter
+namespace Spitfyr.GCP.Datastore.Adapter
 {
     public sealed class DatastoreDatabase : IDatastoreDatabase
     {

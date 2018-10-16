@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2026
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Google.Cloud.Datastore.Adapter", "Google.Cloud.Datastore.Adapter\Google.Cloud.Datastore.Adapter.csproj", "{8A403039-F0D5-4895-BD8A-9A6B80DB2EBE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spitfyr.GCP.Datastore.Adapter", "Spitfyr.GCP.Datastore.Adapter\Spitfyr.GCP.Datastore.Adapter.csproj", "{08EE8DDA-2400-4B1D-9E8F-B2F14261F26A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +11,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8A403039-F0D5-4895-BD8A-9A6B80DB2EBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8A403039-F0D5-4895-BD8A-9A6B80DB2EBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8A403039-F0D5-4895-BD8A-9A6B80DB2EBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8A403039-F0D5-4895-BD8A-9A6B80DB2EBE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08EE8DDA-2400-4B1D-9E8F-B2F14261F26A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08EE8DDA-2400-4B1D-9E8F-B2F14261F26A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08EE8DDA-2400-4B1D-9E8F-B2F14261F26A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08EE8DDA-2400-4B1D-9E8F-B2F14261F26A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

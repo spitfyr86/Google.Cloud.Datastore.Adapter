@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 using Google.Cloud.Datastore.V1;
 
-namespace Google.Cloud.Datastore.Adapter
+namespace Spitfyr.GCP.Datastore.Adapter
 {
     public static class FilterBuilder<TEntity>
     {

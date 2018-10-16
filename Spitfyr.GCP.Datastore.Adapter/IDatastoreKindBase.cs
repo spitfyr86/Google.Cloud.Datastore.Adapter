@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Google.Cloud.Datastore.Adapter.Serialization;
 using Google.Cloud.Datastore.V1;
+using Spitfyr.GCP.Datastore.Adapter.Serialization;
 
-namespace Google.Cloud.Datastore.Adapter
+namespace Spitfyr.GCP.Datastore.Adapter
 {
     public interface IDatastoreKindBase<TEntity, TKey>
         where TEntity : DatastoreEntity
@@ -14,7 +14,7 @@ namespace Google.Cloud.Datastore.Adapter
         Task FindOneAndReplaceAsync(TEntity entity);
 
         Task<TEntity> FindAsync(TKey id);
-        Task<IEnumerable<TEntity>> FindInAsync(string field, dynamic[] values);
+        Task<IEnumerable<TEntity>> FindInAsync(IDictionary<string, dynamic> fieldComparisons);
         Task<IEnumerable<TEntity>> FindAsync(IQueryOptions<TEntity> queryOptions);
         Task<IEnumerable<TEntity>> FindAsync(Filter filter);
         Task<IEnumerable<TEntity>> FindAsync(Query query);

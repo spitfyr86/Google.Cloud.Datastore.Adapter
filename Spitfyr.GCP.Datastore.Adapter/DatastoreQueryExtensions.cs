@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Google.Cloud.Datastore.Adapter.Serialization;
-using Google.Cloud.Datastore.V1;
+using Spitfyr.GCP.Datastore.Adapter.Serialization;
 
-namespace Google.Cloud.Datastore.Adapter
+namespace Spitfyr.GCP.Datastore.Adapter
 {
     public static class DatastoreQueryExtensions
     {

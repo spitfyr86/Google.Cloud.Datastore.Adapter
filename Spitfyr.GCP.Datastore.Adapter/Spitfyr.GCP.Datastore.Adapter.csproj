@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>Spitfyr.GCP.Datastore.Adapter</PackageId>
+    <Description>This is a wrapper library for The Google.Cloud.Datastore.V1 .Net library. This supports ASP .Net Core 1.1.</Description>
+    <Company>VSS I.T. Development</Company>
+    <Authors>Dennis Laping</Authors>
+    <Copyright>Copyright ©  2018</Copyright>
+    <PackageLicenseUrl>https://github.com/spitfyr86/Google.Cloud.Datastore.Adapter/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/spitfyr86/Google.Cloud.Datastore.Adapter</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/spitfyr86/Google.Cloud.Datastore.Adapter.git</RepositoryUrl>
+    <PackageTags>google gcp datastore .net</PackageTags>
+    <Version>1.0.0.2</Version>
+    <PackageReleaseNotes>Corrected target framework to ASP .Net Core 1.1</PackageReleaseNotes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Serialization\TypesMetadataLoader.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Cloud.Datastore.V1" Version="2.1.0" />
+  </ItemGroup>
+
+</Project>
