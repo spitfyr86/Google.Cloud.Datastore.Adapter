@@ -7,8 +7,8 @@ namespace Spitfyr.GCP.Datastore.Adapter
     internal class DatastoreKind<TEntity, TKey> : DatastoreKindBase<TEntity, TKey>, IDatastoreKind<TEntity, TKey> 
         where TEntity : DatastoreEntity
     {
-        public DatastoreKind(DatastoreDb database)
-            : base(database) 
+        public DatastoreKind(DatastoreDb database, string entityPrefix)
+            : base(database, entityPrefix) 
         {
         }
 

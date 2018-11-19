@@ -9,6 +9,8 @@ namespace Spitfyr.GCP.Datastore.Adapter
     {
         IDatastoreKind<TEntity> GetKind();
 
+        Filter GetFilter();
+
         Options GetOptions();
 
         IQueryOptions<TEntity> Sort<TProp>(Expression<Func<TEntity, TProp>> field, PropertyOrder.Types.Direction order);
@@ -16,9 +18,5 @@ namespace Spitfyr.GCP.Datastore.Adapter
         IQueryOptions<TEntity> Skip(int? skip);
 
         IQueryOptions<TEntity> Limit(int? limit);
-
-        //long Count();
-
-        //Task<long> CountAsync();
     }
 }

@@ -12,8 +12,8 @@
     <PackageProjectUrl>https://github.com/spitfyr86/Google.Cloud.Datastore.Adapter</PackageProjectUrl>
     <RepositoryUrl>https://github.com/spitfyr86/Google.Cloud.Datastore.Adapter.git</RepositoryUrl>
     <PackageTags>google gcp datastore .net</PackageTags>
-    <Version>1.0.0.3</Version>
-    <PackageReleaseNotes>Removed heavy reflection use and fixed query and mapping issues.</PackageReleaseNotes>
+    <Version>1.0.0.4</Version>
+    <PackageReleaseNotes>Optimized and added query options.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

@@ -8,18 +8,25 @@ namespace Spitfyr.GCP.Datastore.Adapter
 {
     public class QueryOptions<TEntity> : IQueryOptions<TEntity> where TEntity : DatastoreEntity
     {
-        public QueryOptions(IDatastoreKind<TEntity> kind, Options options)
+        public QueryOptions(IDatastoreKind<TEntity> kind, Filter filter, Options options)
         {
             Kind = kind;
+            Filter = filter;
             Options = options;
         }
 
         public IDatastoreKind<TEntity> Kind { get; }
+        public Filter Filter { get; }
         public Options Options { get; private set; }
 
         public IDatastoreKind<TEntity> GetKind()
         {
             return Kind;
+        }
+
+        public Filter GetFilter()
+        {
+            return Filter;
         }
 
         public Options GetOptions()

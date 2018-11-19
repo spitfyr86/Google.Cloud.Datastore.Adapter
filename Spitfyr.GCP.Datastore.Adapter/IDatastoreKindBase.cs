@@ -14,21 +14,29 @@ namespace Spitfyr.GCP.Datastore.Adapter
         Task FindOneAndReplaceAsync(TEntity entity);
 
         Task<TEntity> FindAsync(TKey id);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fieldComparisons"></param>
+        /// <returns></returns>
         Task<IEnumerable<TEntity>> FindInAsync(IDictionary<string, dynamic> fieldComparisons);
         Task<IEnumerable<TEntity>> FindAsync(IQueryOptions<TEntity> queryOptions);
         Task<IEnumerable<TEntity>> FindAsync(Filter filter);
         Task<IEnumerable<TEntity>> FindAsync(Query query);
         Task<IEnumerable<TEntity>> GetAllAsync();
+        Task<IEnumerable<Key>> FindKeysAsync(Filter filter);
         Task<long> CountAsync(IQueryOptions<TEntity> queryOptions);
 
         TKey InsertOne(TEntity entity);
         TKey[] Insert(TEntity[] dalEntities);
-
-        IEnumerable<TEntity> GetAll();
+        
         IEnumerable<TEntity> Find(IQueryOptions<TEntity> queryOptions);
         IEnumerable<TEntity> Find(Filter filter);
         IEnumerable<TEntity> Find(Query query);
+        IEnumerable<TEntity> GetAll();
         IEnumerable<Key> FindKeys(Filter filter);
+        long Count(IQueryOptions<TEntity> queryOptions = null);
 
         Task DeleteOneAsync(TKey id);
         Task DeleteAsync(TKey[] ids);

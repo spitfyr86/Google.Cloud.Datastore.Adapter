@@ -6,10 +6,12 @@ namespace Spitfyr.GCP.Datastore.Adapter
 {
     public sealed class DatastoreDatabase : IDatastoreDatabase
     {
+        private readonly string _entityPrefix;
         private readonly DatastoreDb _datastoreDb;
 
-        public DatastoreDatabase(DatastoreDb datastoreDb)
+        public DatastoreDatabase(DatastoreDb datastoreDb, string entityPrefix)
         {
+            _entityPrefix = entityPrefix;
             _datastoreDb = Ensure.IsNotNull(datastoreDb, nameof(datastoreDb));
         }
 
@@ -18,7 +20,7 @@ namespace Spitfyr.GCP.Datastore.Adapter
         {
             Ensure.IsNotNullOrEmpty(name, nameof(name));
 
-            return new DatastoreKind<TEntity>(_datastoreDb);
+            return new DatastoreKind<TEntity>(_datastoreDb, _entityPrefix);
         }
     }
 }

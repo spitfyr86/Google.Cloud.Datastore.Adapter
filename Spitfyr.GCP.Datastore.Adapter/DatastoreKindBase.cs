@@ -17,25 +17,22 @@ namespace Spitfyr.GCP.Datastore.Adapter
     public abstract class DatastoreKindBase<TEntity, TKey> : IDatastoreKindBase<TEntity, TKey>
         where TEntity : DatastoreEntity
     {
+        private readonly string _kind;
         private readonly KindKeyInfo _kindKeyInfo;
-        //private readonly TypesMetadataLoader _typesMetadataLoader;
-        protected readonly string Kind;
-        protected readonly DatastoreDb Database;
+        private readonly DatastoreDb _database;
 
-        protected DatastoreKindBase(DatastoreDb database)
+        protected DatastoreKindBase(DatastoreDb database, string entityPrefix)
         {
             _kindKeyInfo = GetKindKeyInfo();
-            //_typesMetadataLoader = new TypesMetadataLoader(typeof(TEntity));
 
-            Database = database;
-            Kind = GetKind();
-
+            _database = database;
+            _kind = GetKind(entityPrefix);
         }
         
         public async Task<TKey> InsertOneAsync(TEntity dsEntity)
         {
             var entity = BuildEntity(dsEntity);
-            var keys = await Database.InsertAsync(new[] { entity });
+            var keys = await _database.InsertAsync(new[] { entity });
             if (keys.Any() && keys[0] == null)
             {
                 return GetId(dsEntity);
@@ -49,7 +46,7 @@ namespace Spitfyr.GCP.Datastore.Adapter
         public async Task<TKey[]> InsertAsync(TEntity[] dalEntities)
         {
             var entities = dalEntities.Select(e => BuildEntity(e)).ToArray();
-            var keys = await Database.InsertAsync(entities);
+            var keys = await _database.InsertAsync(entities);
             if (keys.Any() && keys[0] == null)
             {
                 return dalEntities.Select(GetId).ToArray();
@@ -70,14 +67,14 @@ namespace Spitfyr.GCP.Datastore.Adapter
         
         public Task FindOneAndReplaceAsync(TEntity entity)
         {
-            return Database.UpdateAsync(BuildEntity(entity, true));
+            return _database.UpdateAsync(BuildEntity(entity, true));
         }
         
 
         public async Task<TEntity> FindAsync(TKey id)
         {
             var key = BuildKey(id);
-            var entity = await Database.LookupAsync(key);
+            var entity = await _database.LookupAsync(key);
             return entity != null ? BuildDalEntity(entity) : null;
         }
 
@@ -131,10 +128,10 @@ namespace Spitfyr.GCP.Datastore.Adapter
             {
                 var q = new GqlQuery
                 {
-                    QueryString = $"SELECT * FROM {Kind} WHERE {filter}",
+                    QueryString = $"SELECT * FROM {_kind} WHERE {filter}",
                     AllowLiterals = true
                 };
-                var results = await Database.RunQueryAsync(q);
+                var results = await _database.RunQueryAsync(q);
                 entities.AddRange(results.Entities.Select(BuildDalEntity));
             }
 
@@ -145,7 +142,7 @@ namespace Spitfyr.GCP.Datastore.Adapter
         {
             var options = queryOptions.GetOptions();
 
-            var query = new Query(Kind)
+            var query = new Query(_kind)
             {
                 //TODO: Handle multiple property sorts
                 Order = { options.PropertyOrders },
@@ -157,31 +154,55 @@ namespace Spitfyr.GCP.Datastore.Adapter
             if (options.Limit != null)
                 query.Limit = options.Limit;
 
-            var results = await Database.RunQueryAsync(query);
+            var results = await _database.RunQueryAsync(query);
             return results.Entities.Select(BuildDalEntity);
         }
 
         public async Task<IEnumerable<TEntity>> GetAllAsync()
         {
-            var query = new Query(Kind);
+            var query = new Query(_kind);
             return await FindAsync(query);
+        }
+
+        public async Task<IEnumerable<Key>> FindKeysAsync(Filter filter)
+        {
+            var query = new Query(_kind)
+            {
+                Filter = filter,
+                Projection = { "__key__" }
+            };
+            var results = await _database.RunQueryAsync(query);
+            return results.Entities.Select(x => x.Key);
         }
 
         public async Task<long> CountAsync(IQueryOptions<TEntity> queryOptions)
         {
-            var query = new Query(Kind)
+            var query = new Query(_kind)
             {
                 Projection = { "__key__" }
             };
 
-            var results = await Database.RunQueryAsync(query);
+            if (queryOptions != null)
+            {
+                var options = queryOptions.GetOptions();
+
+                query = new Query(_kind)
+                {
+                    Filter = queryOptions.GetFilter(),
+                    Projection = {"__key__"},
+                    Order = {options.PropertyOrders},
+                    Limit = options.Limit
+                };
+            }
+
+            var results = await _database.RunQueryAsync(query);
             return results.Entities.Count;
         }
 
         public TKey InsertOne(TEntity dsEntity)
         {
             var entity = BuildEntity(dsEntity);
-            var keys = Database.Insert(new[] { entity });
+            var keys = _database.Insert(new[] { entity });
             if (keys.Any() && keys[0] == null)
             {
                 return GetId(dsEntity);
@@ -195,7 +216,7 @@ namespace Spitfyr.GCP.Datastore.Adapter
         public TKey[] Insert(TEntity[] dalEntities)
         {
             var entities = dalEntities.Select(e => BuildEntity(e)).ToArray();
-            var keys = Database.Insert(entities);
+            var keys = _database.Insert(entities);
             if (keys.Any() && keys[0] == null)
             {
                 return dalEntities.Select(GetId).ToArray();
@@ -216,7 +237,7 @@ namespace Spitfyr.GCP.Datastore.Adapter
 
         public async Task<IEnumerable<TEntity>> FindAsync(Filter filter)
         {
-            var query = new Query(Kind)
+            var query = new Query(_kind)
             {
                 Filter = filter
             };
@@ -225,36 +246,61 @@ namespace Spitfyr.GCP.Datastore.Adapter
         
         public async Task<IEnumerable<TEntity>> FindAsync(Query query)
         {
-            var results = await Database.RunQueryAsync(query);
+            var results = await _database.RunQueryAsync(query);
             return results.Entities.Select(BuildDalEntity);
         }
 
 
         public IEnumerable<TEntity> GetAll()
         {
-            var query = new Query(Kind);
+            var query = new Query(_kind);
             return Find(query);
         }
 
         public IEnumerable<Key> FindKeys(Filter filter)
         {
-            var query = new Query(Kind)
+            var query = new Query(_kind)
             {
                 Filter = filter,
                 Projection = { "__key__" }
             };
-            var results = Database.RunQuery(query);
+            var results = _database.RunQuery(query);
             return results.Entities.Select(x => x.Key);
+        }
+
+        public long Count(IQueryOptions<TEntity> queryOptions)
+        {
+            var query = new Query(_kind)
+            {
+                Projection = { "__key__" }
+            };
+
+            if (queryOptions != null)
+            {
+                var options = queryOptions.GetOptions();
+
+                query = new Query(_kind)
+                {
+                    Filter = queryOptions.GetFilter(),
+                    Projection = { "__key__" },
+                    Order = { options.PropertyOrders },
+                    Limit = options.Limit
+                };
+            }
+
+            var results = _database.RunQuery(query);
+            return results.Entities.Count;
         }
 
         public IEnumerable<TEntity> Find(IQueryOptions<TEntity> queryOptions)
         {
             var options = queryOptions.GetOptions();
 
-            var query = new Query(Kind)
+            var query = new Query(_kind)
             {
                 //TODO: Handle multiple property sorts
                 Order = { options.PropertyOrders },
+                Limit = options.Limit
             };
 
             //if (!string.IsNullOrEmpty(options.Skip))
@@ -263,13 +309,13 @@ namespace Spitfyr.GCP.Datastore.Adapter
             if (options.Limit != null)
                 query.Limit = options.Limit;
 
-            var results = Database.RunQuery(query);
+            var results = _database.RunQuery(query);
             return results.Entities.Select(BuildDalEntity);
         }
 
         public IEnumerable<TEntity> Find(Filter filter)
         {
-            var query = new Query(Kind)
+            var query = new Query(_kind)
             {
                 Filter = filter
             };
@@ -278,7 +324,7 @@ namespace Spitfyr.GCP.Datastore.Adapter
 
         public IEnumerable<TEntity> Find(Query query)
         {
-            var results = Database.RunQuery(query);
+            var results = _database.RunQuery(query);
             return results.Entities.Select(BuildDalEntity);
         }
 
@@ -286,7 +332,7 @@ namespace Spitfyr.GCP.Datastore.Adapter
         public async Task DeleteOneAsync(TKey id)
         {
             var key = BuildKey(id);
-            await Database.DeleteAsync(key);
+            await _database.DeleteAsync(key);
         }
         
         public async Task DeleteAsync(TKey[] ids)
@@ -296,19 +342,19 @@ namespace Spitfyr.GCP.Datastore.Adapter
                 throw new ArgumentOutOfRangeException(nameof(ids), "Bulk delete of more than 1000 entities is not allowed.");
             }
             var keys = ids.Select(BuildKey);
-            await Database.DeleteAsync(keys);
+            await _database.DeleteAsync(keys);
         }
         
         public async Task DeleteManyAsync(Filter filter)
         {
             var keys = FindKeys(filter);
-            await Database.DeleteAsync(keys);
+            await _database.DeleteAsync(keys);
         }
 
         public async Task UpdateAsync(TEntity obj)
         {
             var entity = BuildEntity(obj, true);
-            await Database.UpdateAsync(entity);
+            await _database.UpdateAsync(entity);
         }
         
         public string GetPropertyName<TProp>(Expression<Func<TEntity, TProp>> expression)
@@ -326,7 +372,7 @@ namespace Spitfyr.GCP.Datastore.Adapter
             if (!string.IsNullOrEmpty(pageCursor))
                 query.StartCursor = ByteString.FromBase64(pageCursor);
 
-            return Database.RunQuery(query).EndCursor?.ToBase64();
+            return _database.RunQuery(query).EndCursor?.ToBase64();
             // [END datastore_cursor_paging]
         }
 
@@ -340,26 +386,31 @@ namespace Spitfyr.GCP.Datastore.Adapter
         public TEntity BuildDalEntity(Entity entity)
         {
             var obj = FromEntity(entity, typeof(TEntity));
-            //var keyPropertyAccessors = GetKeyPropertyAccessors();
+
             if (_kindKeyInfo.IsAutoGenerated)
             {
-                //keyPropertyAccessors.Set(obj, entity.Key.Path.First().Id);
                 obj.GetType().GetProperty(_kindKeyInfo.KeyName)
                     .SetValue(obj, entity.Key.Path.First().Id);
             }
             else
             {
-                //keyPropertyAccessors.Set(obj, entity.Key.Path.First().Name);
                 obj.GetType().GetProperty(_kindKeyInfo.KeyName)
                     .SetValue(obj, entity.Key.Path.First().Name);
             }
             return obj as TEntity;
         }
         
-        private string GetKind()
+        private string GetKind(string entityPrefix)
         {
             var kindAttribute = typeof(TEntity).GetTypeInfo().GetCustomAttribute(typeof(KindAttribute));
-            return kindAttribute != null ? ((KindAttribute)kindAttribute).Kind : nameof(TEntity);
+
+            var kindName = kindAttribute != null 
+                ? ((KindAttribute)kindAttribute).Kind :
+                typeof(TEntity).Name;
+
+            return !string.IsNullOrEmpty(entityPrefix)
+                ? $"{entityPrefix}{kindName}"
+                : kindName;
         }
 
         private KindKeyInfo GetKindKeyInfo()
@@ -382,9 +433,9 @@ namespace Spitfyr.GCP.Datastore.Adapter
                 }
             }
 
-            if (propertiesWithKeyAttributeCount != 1)
+            if (propertiesWithKeyAttributeCount > 1)
             {
-                string errorMsg = propertiesWithKeyAttributeCount > 1 ? "Too many keys defined - only one allowed." : "Missing required key attribute - make sure you've added KindKey attribute on one of the properties.";
+                var errorMsg = propertiesWithKeyAttributeCount > 1 ? "Too many keys defined - only one allowed." : "Missing required key attribute - make sure you've added KindKey attribute on one of the properties.";
                 throw new Exception(errorMsg);
             }
 
@@ -407,9 +458,6 @@ namespace Spitfyr.GCP.Datastore.Adapter
 
         private TKey GetId(TEntity obj)
         {
-            //var keyPropertyAccessors = GetKeyPropertyAccessors();
-            //var id = keyPropertyAccessors.Get(obj);
-
             var id = obj.GetType().GetProperties()
                 .Where(x => x.Name == _kindKeyInfo.KeyName);
 
@@ -418,9 +466,6 @@ namespace Spitfyr.GCP.Datastore.Adapter
 
         private void SetId(TEntity obj, TKey key)
         {
-            //var keyPropertyAccessors = GetKeyPropertyAccessors();
-            //keyPropertyAccessors.Set(obj, key);
-
             var objType = obj.GetType();
 
             foreach (var toTypeProp in objType.GetProperties())
@@ -434,7 +479,7 @@ namespace Spitfyr.GCP.Datastore.Adapter
 
         private Key BuildKey(TKey id)
         {
-            var keyFactory = Database.CreateKeyFactory(Kind);
+            var keyFactory = _database.CreateKeyFactory(_kind);
             return typeof(TKey) == typeof(long) 
                 ? keyFactory.CreateKey(Convert.ToInt64(id)) 
                 : keyFactory.CreateKey(Convert.ToString(id));
@@ -445,14 +490,11 @@ namespace Spitfyr.GCP.Datastore.Adapter
             Key key;
             if (_kindKeyInfo.IsAutoGenerated && !isUpdate)
             {
-                key = Database.CreateKeyFactory(Kind).CreateIncompleteKey();
+                key = _database.CreateKeyFactory(_kind).CreateIncompleteKey();
                 return key;
             }
             else
             {
-                //var keyPropertyAccessors = GetKeyPropertyAccessors();
-                //var id = keyPropertyAccessors.Get(obj);
-
                 var objType = obj.GetType();
 
                 foreach (var toTypeProp in objType.GetProperties())
@@ -468,13 +510,7 @@ namespace Spitfyr.GCP.Datastore.Adapter
             }
             return null;
         }
-
-        //private Accessors GetKeyPropertyAccessors()
-        //{
-        //    var keyProperty = _typesMetadataLoader.GetTypeMetadata(typeof(TEntity)).PropertiesInfo[_kindKeyInfo.KeyName];
-        //    return keyProperty;
-        //}
-
+        
         private Entity ToEntity(TEntity obj)
         {
             var entity = new Entity();
@@ -489,18 +525,7 @@ namespace Spitfyr.GCP.Datastore.Adapter
                     entity.Properties.Add(propName, CreateValueFromObject(propValue));
                 }
             }
-
-            //var typeMetadata = _typesMetadataLoader.GetTypeMetadata(obj.GetType());
-
-            //foreach (var type in typeMetadata.PropertiesInfo)
-            //{
-            //    var val = type.Value.Get(obj);
-            //    if (type.Key != _kindKeyInfo.KeyName) // Not the key
-            //    {
-            //        entity.Properties.Add(type.Key, CreateValueFromObject(val, IsExcludeColumnFromIndex(type.Value.CustomAttributes)));
-            //    }
-            //}
-
+            
             return entity;
         }
 
@@ -554,7 +579,7 @@ namespace Spitfyr.GCP.Datastore.Adapter
             {
                 var list = obj as ICollection;
                 value.ArrayValue = new ArrayValue();
-                //var listType = _typesMetadataLoader.GetTypeMetadata(type);
+
                 if (list != null) //TODO: Otherwise should add warn logs
                 {
                     foreach (var item in list)
@@ -566,42 +591,24 @@ namespace Spitfyr.GCP.Datastore.Adapter
             else if (type.GetTypeInfo().IsClass)
             {
                 value.EntityValue = new Entity();
-                //var classMetadata = _typesMetadataLoader.GetTypeMetadata(type);
-                //if (classMetadata != null)
-                //{
-                    //if (!string.IsNullOrEmpty(classMetadata.InheritedClassType))
-                    //{
-                    //    value.EntityValue.Properties.Add(TypesMetadataLoader.InheritedTypePropertyName, classMetadata.InheritedClassType);
-                    //}
 
-                    foreach (var property in type.GetRuntimeProperties())
-                    {
-                        var propName = property.Name;
-                        var propValue = property.GetValue(obj);
-                        value.EntityValue.Properties.Add(propName, CreateValueFromObject(propValue)); // TODO: Should call ToEntity - but should have depth consideration in regarding to the key
-                    }
-                //}
+                foreach (var property in type.GetRuntimeProperties())
+                {
+                    var propName = property.Name;
+                    var propValue = property.GetValue(obj);
+                    value.EntityValue.Properties.Add(propName, CreateValueFromObject(propValue)); // TODO: Should call ToEntity - but should have depth consideration in regarding to the key
+                }
             }
 
             return value;
         }
 
-        private object FromEntity(Entity entity, System.Type toEntityType) //, TEntity toEntity = null)
+        private object FromEntity(Entity entity, System.Type toEntityType)
         {
-            //var typeMetadata = _typesMetadataLoader.GetTypeMetadata(toType);
-            //var obj = typeMetadata.Constructor();
             var obj = Activator.CreateInstance(toEntityType);
 
             foreach (var property in entity.Properties)
             {
-                //if (!typeMetadata.PropertiesInfo.ContainsKey(propertyName))
-                //{
-                //    continue;
-                //    //Warning
-                //}
-                //var propertyAccessors = typeMetadata.PropertiesInfo[propertyName];
-                //propertyAccessors.Set(obj, CreateObjectFromValue(property.Value, propertyAccessors.Type));
-
                 foreach (var toTypeProp in toEntityType.GetProperties())
                 {
                     if (property.Key == toTypeProp.Name)
@@ -659,12 +666,6 @@ namespace Spitfyr.GCP.Datastore.Adapter
             }
             if (value.ValueTypeCase == Value.ValueTypeOneofCase.EntityValue)
             {
-                //if (value.EntityValue.Properties.ContainsKey(TypesMetadataLoader.InheritedTypePropertyName)) // Handle abstract class
-                //{
-                //    var inheritedTypeName = value.EntityValue.Properties[TypesMetadataLoader.InheritedTypePropertyName].StringValue;
-                //    var inheritedType = _typesMetadataLoader.GetTypeMetadata(inheritedTypeName);
-                //    return FromEntity(value.EntityValue, inheritedType);
-                //}
                 if (thisEntityType != null)
                 {
                     return FromEntity(value.EntityValue, thisEntityType);
@@ -673,22 +674,18 @@ namespace Spitfyr.GCP.Datastore.Adapter
             }
             if (value.ValueTypeCase == Value.ValueTypeOneofCase.ArrayValue)
             {
-                //var typeMetadata = _typesMetadataLoader.GetTypeMetadata(requestedType) as ListMetadata;
-                //var obj = typeMetadata?.Constructor();
                 var requestedTypeInfo = requestedType.GetTypeInfo();
                 var isDictionary = requestedTypeInfo.IsGenericType 
                                    && requestedTypeInfo.GetGenericTypeDefinition() == typeof(IDictionary<,>);
 
                 if (isDictionary)
                 {
-                    //if (value.ArrayValue.Values.Count == 0)
-                    //    return new Dictionary<object, object>();
-                    
                     var t1 = requestedType.GetGenericArguments()[0];
                     var t2 = requestedType.GetGenericArguments()[1];
                     var dictType = typeof(Dictionary<,>).MakeGenericType(t1, t2);
                     var dictionary = (IDictionary)Activator.CreateInstance(dictType);
 
+                    // TODO: Implement mapping of Dicitionary collection here.
                     foreach (var item in value.ArrayValue.Values)
                     {
                     }

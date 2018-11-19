@@ -19,5 +19,12 @@ namespace Spitfyr.GCP.Datastore.Adapter
             var kind = queryOptions.GetKind();
             return kind.CountAsync(queryOptions);
         }
+
+        public static long Count<TEntity>(this IQueryOptions<TEntity> queryOptions)
+            where TEntity : DatastoreEntity
+        {
+            var kind = queryOptions.GetKind();
+            return kind.Count(queryOptions);
+        }
     }
 }

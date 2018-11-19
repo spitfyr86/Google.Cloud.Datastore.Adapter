@@ -6,14 +6,14 @@ namespace Spitfyr.GCP.Datastore.Adapter
     internal class DatastoreKind<TEntity> : DatastoreKind<TEntity, long>, IDatastoreKind<TEntity> 
         where TEntity : DatastoreEntity
     {
-        public DatastoreKind(DatastoreDb database)
-            : base(database)
+        public DatastoreKind(DatastoreDb database, string entityPrefix)
+            : base(database, entityPrefix)
         {
         }
 
         public IQueryOptions<TEntity> Where(Filter filter)
         {
-            return new QueryOptions<TEntity>(this, new Options());
+            return new QueryOptions<TEntity>(this, filter, new Options());
         }
     }
 }
