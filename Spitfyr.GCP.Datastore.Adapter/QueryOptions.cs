@@ -42,8 +42,9 @@ namespace Spitfyr.GCP.Datastore.Adapter
 
             Options = new Options(Options)
             {
-                PropertyOrders = {{ propName, PropertyOrder.Types.Direction.Descending }}
+                PropertyOrders = new RepeatedField<PropertyOrder>{{ propName, sortOrder }}
             };
+
             return this;
         }
 
